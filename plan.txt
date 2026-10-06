@@ -1,0 +1,2 @@
+make account:
+it prompts you to either log in or sign up. if you press sign up and sign up it saves ur account credentials
