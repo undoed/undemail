@@ -1,5 +1,4 @@
 # Imports
-import tkinter
 import hashlib
 
 # Definitions
@@ -17,13 +16,19 @@ duplicate = False
 
 #wn.mainloop()
 
+# Initial Prompt
 prompt = input("Welcome to undemail! Would you like to log in [1], or sign up [2] ? \n[1] [2]: ")
 
+# Checks if user chose to login
 if prompt == "1":
     account_email_login = input("Please enter account email: ")
     account_password_login = input("Please enter the corresponding account password: ")
+    # Hashes the password before checking it against the hashed accounts.txt
     account_password_login_hashed = hashlib.sha256(account_password_login.encode('utf-8')).hexdigest()
+
+    # Opens account.txt in read mode and compares hashed user password input with the hashed password found in accounts.txt
     with open("accounts.txt", "r", encoding="utf-8") as account:
+        # Iterates through each line in accounts.txt to compare it to user's alleged password
         for line in account:
             line = line.strip()
             x, y = line.split("|")
@@ -35,16 +40,19 @@ if prompt == "1":
             else:
                 print("Password or email incorrect.")
 
-if prompt == "2":
+# Checks if user chose to signup
+elif prompt == "2":
     account_email = input("Please enter account email: ")
     account_password = input("Please enter the corresponding account password: ")
     account_password_hashed = hashlib.sha256(account_password.encode('utf-8')).hexdigest()
     syntax_check_signup = account_email + account_password
+
+    # Checks if the account email is duplicate
     with open("accounts.txt", "r", encoding="utf-8") as account:
         for line in account:
             line = line.strip()
             x, y = line.split("|")
-            if x == account_email_login:
+            if x == account_email:
                 duplicate = True
     if duplicate:
         print("Sorry, that email is already taken.")
