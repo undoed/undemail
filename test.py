@@ -1,5 +1,8 @@
 import tkinter as tk
 
+hello = "helBloW"
+
+print(hello.find("@"))
 def click():
     print("clikedboii")
 

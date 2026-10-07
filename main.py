@@ -6,6 +6,7 @@ logged_in = False
 syntax_check_bool = True
 you_have_mail = False
 duplicate = False
+email_syntax_check = None
 
 # Tkinter
 #wn = tkinter.Tk()
@@ -46,6 +47,15 @@ elif prompt == "2":
     account_password = input("Please enter the corresponding account password: ")
     account_password_hashed = hashlib.sha256(account_password.encode('utf-8')).hexdigest()
     syntax_check_signup = account_email + account_password
+    # Checks for corrext xxx@xxx.xxx email format
+    email_format_check_len = len(account_email)
+    email_format_check_at = account_email.find("@")
+    email_format_check_dot = account_email.find(".")
+    print(email_format_check_at, email_format_check_dot,email_format_check_len)
+    if email_format_check_at > 0 and email_format_check_at < email_format_check_dot and email_format_check_len > email_format_check_dot:
+        email_syntax_check = True
+    else:
+        email_syntax_check = False
 
     # Checks if the account email is duplicate
     with open("accounts.txt", "r", encoding="utf-8") as account:
@@ -56,7 +66,7 @@ elif prompt == "2":
                 duplicate = True
     if duplicate:
         print("Sorry, that email is already taken.")
-    elif not duplicate:
+    elif not duplicate and email_syntax_check:
         with open("accounts.txt", "a", encoding="utf-8") as account:
             account.write(f"{account_email}|{account_password_hashed}\n")
         print("Account created successfully! Please log in to continue.")
