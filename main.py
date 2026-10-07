@@ -1,6 +1,19 @@
+# Imports
+import tkinter
+
 # Definitions
 logged_in = False
 syntax_check_bool = True
+you_have_mail = False
+
+# Tkinter
+wn = tkinter.Tk()
+
+wn.geometry("500x500")
+wn.title("Undemail")
+wn.config(background="#ffffff")
+
+wn.mainloop()
 
 prompt = input("Welcome to undemail! Would you like to log in [1], or sign up [2] ? \n[1] [2]: ")
 
@@ -50,6 +63,11 @@ if logged_in:
                 line = line.strip()
                 sender, receiver, subject, body = line.split("|")
                 if receiver == logged_in_as:
-                    print(f"FROM: {sender} \nTO: {receiver} \nSUBJECT: {subject} \nCONTENT: {body}")
+                    you_have_mail = True
                 else:
-                    print("You have no mail.")
+                    you_have_mail = False
+        if you_have_mail:
+            print(f"FROM: {sender} \nTO: {receiver} \nSUBJECT: {subject} \nCONTENT: {body}")
+        
+        elif not you_have_mail:
+            print("You have no mail.")
