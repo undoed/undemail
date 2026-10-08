@@ -1,6 +1,7 @@
 # Imports
 import hashlib
-
+import tkinter as tk
+ 
 # Definitions
 logged_in = False
 syntax_check_bool = True
@@ -8,22 +9,15 @@ you_have_mail = False
 duplicate = False
 email_syntax_check = None
 
-# Tkinter
-#wn = tkinter.Tk()
-
-#wn.geometry("500x500")
-#wn.title("Undemail")
-#wn.config(background="#ffffff")
-
-#wn.mainloop()
-
-# Initial Prompt
-prompt = input("Welcome to undemail! Would you like to log in [1], or sign up [2] ? \n[1] [2]: ")
+# Tkinter functions
+def email_field():
+    email_entry.get()
 
 # Checks if user chose to login
-if prompt == "1":
-    account_email_login = input("Please enter account email: ")
-    account_password_login = input("Please enter the corresponding account password: ")
+def login():
+    global logged_in_as
+    global logged_in
+
     # Hashes the password before checking it against the hashed accounts.txt
     account_password_login_hashed = hashlib.sha256(account_password_login.encode('utf-8')).hexdigest()
 
@@ -42,11 +36,21 @@ if prompt == "1":
                 print("Password or email incorrect.")
 
 # Checks if user chose to signup
-elif prompt == "2":
-    account_email = input("Please enter account email: ")
-    account_password = input("Please enter the corresponding account password: ")
+def signup():
+    wn.destroy()
+    wn_signup = tk.Tk()
+
+    wn_signup.geometry("650x500")
+    wn_signup.title("Undemail Signup")
+    wn_signup.config(background="#ffffff")
+    
+    global email_entry
+    email_entry = tk.Entry()
+    email_entry.pack()
+
+    email_entry_button = tk.Button(text="Done")
+    email_entry_button.pack()
     account_password_hashed = hashlib.sha256(account_password.encode('utf-8')).hexdigest()
-    syntax_check_signup = account_email + account_password
     # Checks for corrext xxx@xxx.xxx email format
     email_format_check_len = len(account_email)
     email_format_check_at = account_email.find("@")
@@ -61,7 +65,7 @@ elif prompt == "2":
     with open("accounts.txt", "r", encoding="utf-8") as account:
         for line in account:
             line = line.strip()
-            x, y = line.split("|")
+            x = line.split("|")[0]
             if x == account_email:
                 duplicate = True
     if duplicate:
@@ -98,3 +102,23 @@ if logged_in:
         
         elif not you_have_mail:
             print("You have no mail.")
+
+# Tkinter
+wn = tk.Tk()
+
+wn.geometry("650x500")
+wn.title("Undemail")
+wn.config(background="#ffffff")
+
+welcome_text = tk.Label(wn, text="Welcome to undemail!", font=("Arial", 20, "bold"))
+welcome_text.place(x=180, y=50)
+
+login_button = tk.Button(text="Login")
+login_button.config(command=login)
+login_button.place(x=370, y=350)
+
+signup_button = tk.Button(text="Signup")
+signup_button.config(command=signup)
+signup_button.place(x=200, y=350)
+
+wn.mainloop()
