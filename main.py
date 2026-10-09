@@ -11,7 +11,69 @@ email_syntax_check = None
 
 # Tkinter functions
 def email_field():
-    email_entry.get()
+    global signup_email
+    signup_email = email_entry.get()
+    print(signup_email)
+
+    wn_signup.destroy()
+    
+    global wn_signup_password
+    wn_signup_password = tk.Tk()
+
+    wn_signup_password.geometry("650x500")
+    wn_signup_password.title("Undemail Signup")
+    wn_signup_password.config(background="#ffffff")
+
+    email_label = tk.Label(text="Please enter password:")
+    email_label.place(x=257, y=150)
+
+
+    global password_entry
+    password_entry = tk.Entry(show="*")
+    password_entry.place(x=250, y=250)
+
+    password_entry_button = tk.Button(text="Done")
+    password_entry_button.place(x=303, y=300)
+    password_entry_button.config(command=password_field)
+
+    # Checks for corrext xxx@xxx.xxx email format
+    email_format_check_len = len(signup_email)
+    email_format_check_at = signup_email.find("@")
+    email_format_check_dot = signup_email.find(".")
+
+    global email_syntax_check
+
+    if email_format_check_at > 0 and email_format_check_at < email_format_check_dot and email_format_check_len > email_format_check_dot:
+        email_syntax_check = True
+    else:
+        email_syntax_check = False
+
+    # Checks if the account email is duplicate
+    global duplicate
+    with open("accounts.txt", "r", encoding="utf-8") as account:
+        for line in account:
+            line = line.strip()
+            x = line.split("|")[0]
+            if x == signup_email:
+                duplicate = True
+
+def password_field():
+    global signup_password
+    signup_password = password_entry.get()
+    print(signup_password)
+
+    wn_signup_password.destroy()
+    logged_in_wn = tk.Tk()
+    logged_in_wn.config(bg="#FFFFFF")
+
+    account_password_hashed = hashlib.sha256(signup_password.encode('utf-8')).hexdigest()
+
+    if duplicate:
+        print("Sorry, that email is already taken.")
+    elif not duplicate and email_syntax_check:
+        with open("accounts.txt", "a", encoding="utf-8") as account:
+            account.write(f"{signup_email}|{account_password_hashed}\n")
+        print("Account created successfully! Please log in to continue.")
 
 # Checks if user chose to login
 def login():
@@ -36,44 +98,26 @@ def login():
                 print("Password or email incorrect.")
 
 # Checks if user chose to signup
-def signup():
+def signup_screen():
     wn.destroy()
+    global wn_signup
     wn_signup = tk.Tk()
 
     wn_signup.geometry("650x500")
     wn_signup.title("Undemail Signup")
     wn_signup.config(background="#ffffff")
-    
+
+    email_label = tk.Label(text="Please enter email:")
+    email_label.place(x=268, y=150)
+
+
     global email_entry
     email_entry = tk.Entry()
-    email_entry.pack()
+    email_entry.place(x=250, y=250)
 
     email_entry_button = tk.Button(text="Done")
-    email_entry_button.pack()
-    account_password_hashed = hashlib.sha256(account_password.encode('utf-8')).hexdigest()
-    # Checks for corrext xxx@xxx.xxx email format
-    email_format_check_len = len(account_email)
-    email_format_check_at = account_email.find("@")
-    email_format_check_dot = account_email.find(".")
-    print(email_format_check_at, email_format_check_dot,email_format_check_len)
-    if email_format_check_at > 0 and email_format_check_at < email_format_check_dot and email_format_check_len > email_format_check_dot:
-        email_syntax_check = True
-    else:
-        email_syntax_check = False
-
-    # Checks if the account email is duplicate
-    with open("accounts.txt", "r", encoding="utf-8") as account:
-        for line in account:
-            line = line.strip()
-            x = line.split("|")[0]
-            if x == account_email:
-                duplicate = True
-    if duplicate:
-        print("Sorry, that email is already taken.")
-    elif not duplicate and email_syntax_check:
-        with open("accounts.txt", "a", encoding="utf-8") as account:
-            account.write(f"{account_email}|{account_password_hashed}\n")
-        print("Account created successfully! Please log in to continue.")
+    email_entry_button.place(x=303, y=300)
+    email_entry_button.config(command=email_field)
 
 if logged_in:
     yorn = input("Would you like to send an email [1] or check inbox [2]? \n[1] [2]")
@@ -118,7 +162,7 @@ login_button.config(command=login)
 login_button.place(x=370, y=350)
 
 signup_button = tk.Button(text="Signup")
-signup_button.config(command=signup)
+signup_button.config(command=signup_screen)
 signup_button.place(x=200, y=350)
 
 wn.mainloop()
