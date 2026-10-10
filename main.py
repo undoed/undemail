@@ -8,6 +8,9 @@ syntax_check_bool = True
 you_have_mail = False
 duplicate = False
 email_syntax_check = None
+found_correct_email = False
+BG = "#ffffff"
+
 
 # Tkinter functions
 def email_field_check():
@@ -40,10 +43,10 @@ def email_field_check():
 
     if not duplicate and email_syntax_check:
         email_field()
-    else:
-        email_label_error = tk.Label()
-        email_label_error.config(fg="#ff3333")
-        email_label_error.place()
+    elif not email_syntax_check:
+        signup_screen(error=True)
+    elif duplicate:
+        signup_screen(duplicate=True)
 
 def email_field():
     wn_signup.destroy()
@@ -55,7 +58,7 @@ def email_field():
     wn_signup_password.title("Undemail Signup")
     wn_signup_password.config(background="#ffffff")
 
-    password_label = tk.Label(text="Please enter password:")
+    password_label = tk.Label(text="Please enter password:", bg=BG)
     password_label.config(font=("Arial", 16, "bold"))
     password_label.place(x=208, y=150)
 
@@ -73,8 +76,10 @@ def password_field():
     print(signup_password)
 
     wn_signup_password.destroy()
+
     logged_in_wn = tk.Tk()
     logged_in_wn.config(bg="#FFFFFF")
+    logged_in_wn.geometry("650x500")
 
     account_password_hashed = hashlib.sha256(signup_password.encode('utf-8')).hexdigest()
 
@@ -85,8 +90,44 @@ def password_field():
             account.write(f"{signup_email}|{account_password_hashed}\n")
         print("Account created successfully! Please log in to continue.")
 
+def password_field_login_get():
+    global login_password
+    login_password = password_entry.get()
+    print(login_password) 
 
-def email_field_login():
+
+    account_password_login_hashed = hashlib.sha256(login_password.encode('utf-8')).hexdigest()
+
+    # Opens account.txt in read mode and compares hashed user password input with the hashed password found in accounts.txt
+    with open("accounts.txt", "r", encoding="utf-8") as account:
+
+        # Iterates through each line in accounts.txt to compare it to user's alleged password
+        for line in account:
+            num_of_lines = len(account.readlines())
+            line = line.strip()
+            x, y = line.split("|")
+
+            with open("accounts.txt", "r", encoding="utf-8") as account:
+                # Iterates through each line in accounts.txt to compare it to user's alleged password
+                for line in account:
+                    line = line.strip()
+                    x, y = line.split("|")
+                    if x == login_email and y == account_password_login_hashed:
+                        found_correct_email = True
+
+                        break
+
+                if found_correct_email:
+                    print("Login successful! Welcome back!")
+                    global logged_in
+                    global logged_in_as
+                    logged_in = True
+                    logged_in_as = login_email
+                else:
+                    print("Incorrect email or password.")         
+
+
+def password_field_login():
     global login_email
     login_email = email_entry_login.get()
     print(login_email)
@@ -100,7 +141,7 @@ def email_field_login():
     wn_login_password.title("Undemail Signup")
     wn_login_password.config(background="#ffffff")
 
-    password_label_login = tk.Label(text="Please enter password:")
+    password_label_login = tk.Label(text="Please enter password:", bg=BG)
     password_label_login.config(font=("Arial", 16, "bold"))
     password_label_login.place(x=213, y=150)
 
@@ -108,33 +149,13 @@ def email_field_login():
     password_entry = tk.Entry(show="*")
     password_entry.place(x=250, y=250)
 
-    password_entry_button = tk.Button(text="Done")
-    password_entry_button.place(x=303, y=300)
-    password_entry_button.config(command=password_field)
-
-def password_field_login():
-    global signup_password
-    signup_password = password_entry.get()
-    print(signup_password)
-
-    wn_signup_password.destroy()
-    logged_in_wn = tk.Tk()
-    logged_in_wn.config(bg="#FFFFFF")
-
-    account_password_hashed = hashlib.sha256(signup_password.encode('utf-8')).hexdigest()
-
-    if duplicate:
-        print("Sorry, that email is already taken.")
-    elif not duplicate and email_syntax_check:
-        with open("accounts.txt", "a", encoding="utf-8") as account:
-            account.write(f"{signup_email}|{account_password_hashed}\n")
-        print("Account created successfully! Please log in to continue.")
+    global password_entry_button_login
+    password_entry_button_login = tk.Button(text="Done")
+    password_entry_button_login.place(x=303, y=300)
+    password_entry_button_login.config(command=password_field_login_get)
 
 # Function that runs when you press login
 def login_screen():
-    global logged_in_as
-    global logged_in
-
     wn.destroy()
 
     global wn_login
@@ -142,7 +163,7 @@ def login_screen():
     wn_login.config(bg="#FFFFFF")
     wn_login.geometry("650x500")
 
-    email_label_login = tk.Label(text="Please enter email to log in:")
+    email_label_login = tk.Label(text="Please enter email to log in:", bg=BG)
     email_label_login.config(font=("Arial", 16, "bold"))
     email_label_login.place(x=195, y=150)
 
@@ -152,49 +173,39 @@ def login_screen():
 
     email_entry_button_login = tk.Button(text="Done")
     email_entry_button_login.place(x=303, y=300)
-    email_entry_button_login.config(command=email_field_login)
-
-    # Hashes the password before checking it against the hashed accounts.txt
-    account_password_login_hashed = hashlib.sha256(account_password_login.encode('utf-8')).hexdigest()
-
-    # Opens account.txt in read mode and compares hashed user password input with the hashed password found in accounts.txt
-    with open("accounts.txt", "r", encoding="utf-8") as account:
-        # Iterates through each line in accounts.txt to compare it to user's alleged password
-        for line in account:
-            line = line.strip()
-            x, y = line.split("|")
-            if x == account_email_login and y == account_password_login_hashed:
-                print("Login successful! Welcome back!")
-                logged_in = True
-                logged_in_as = account_email_login
-                break
-            else:
-                print("Password or email incorrect.")
+    email_entry_button_login.config(command=password_field_login)
 
 # Checks if user chose to signup
-def signup_screen(error):
-    wn.destroy()
-    global wn_signup
-    wn_signup = tk.Tk()
+def signup_screen(error=False, duplicate=False):
+    if not error and not duplicate:
+        wn.destroy()
+        global wn_signup
+        wn_signup = tk.Tk()
 
-    wn_signup.geometry("650x500")
-    wn_signup.title("Undemail Signup")
-    wn_signup.config(background="#ffffff")
+        wn_signup.geometry("650x500")
+        wn_signup.title("Undemail Signup")
+        wn_signup.config(background="#ffffff")
 
-    email_label = tk.Label(text="Please enter email to sign up:")
-    email_label.config(font=("Arial", 16, "bold"))
-    email_label.place(x=180, y=150)
+        email_label = tk.Label(text="Please enter email to sign up:", bg=BG)
+        email_label.config(font=("Arial", 16, "bold"))
+        email_label.place(x=180, y=150)
 
-    global email_entry
-    email_entry = tk.Entry()
-    email_entry.place(x=250, y=250)
+        global email_entry
+        email_entry = tk.Entry()
+        email_entry.place(x=250, y=250)
 
-    email_entry_button = tk.Button(text="Done")
-    email_entry_button.place(x=303, y=300)
-    email_entry_button.config(command=email_field_check)
+        email_entry_button = tk.Button(text="Done")
+        email_entry_button.place(x=303, y=300)
+        email_entry_button.config(command=email_field_check)
 
-    if error:
-        pass
+    elif error:
+        syntax_error = tk.Label(text="Email must be in xxx@xxx.xxx format.", fg="#ff3333", bg=BG)
+        syntax_error.place(x=215, y=350)
+    elif duplicate:
+        duplicate_error = tk.Label(text="That email already exists!", fg="#ff3333", bg=BG)
+        duplicate_error.place(x=250, y=350)
+        
+
 
 if logged_in:
     yorn = input("Would you like to send an email [1] or check inbox [2]? \n[1] [2]")
@@ -231,7 +242,7 @@ wn.geometry("650x500")
 wn.title("Undemail")
 wn.config(background="#ffffff")
 
-welcome_text = tk.Label(wn, text="Welcome to undemail!", font=("Arial", 20, "bold"))
+welcome_text = tk.Label(wn, text="Welcome to undemail!", font=("Arial", 20, "bold"), bg=BG)
 welcome_text.place(x=180, y=50)
 
 login_button = tk.Button(text="Login")
