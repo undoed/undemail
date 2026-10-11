@@ -1,11 +1,11 @@
 # Imports
 import hashlib
 import tkinter as tk
+from tkinter import scrolledtext
  
 # Definitions
 logged_in = False
 syntax_check_bool = True
-you_have_mail = False
 duplicate = False
 email_syntax_check = None
 found_correct_email = False
@@ -13,6 +13,9 @@ BG = "#ffffff"
 
 
 # Tkinter functions
+def signup_write():
+    pass
+
 def email_field_check():
     global signup_email
     signup_email = email_entry.get()
@@ -26,7 +29,7 @@ def email_field_check():
     global email_syntax_check
 
     if email_format_check_at > 0 and email_format_check_at < email_format_check_dot and email_format_check_len > email_format_check_dot:
-        email_syntax_check = True
+        signup_write()
     else:
         email_syntax_check = False
 
@@ -103,7 +106,6 @@ def password_field_login_get():
 
         # Iterates through each line in accounts.txt to compare it to user's alleged password
         for line in account:
-            num_of_lines = len(account.readlines())
             line = line.strip()
             x, y = line.split("|")
 
@@ -114,7 +116,6 @@ def password_field_login_get():
                     x, y = line.split("|")
                     if x == login_email and y == account_password_login_hashed:
                         found_correct_email = True
-
                         break
 
                 if found_correct_email:
@@ -123,8 +124,10 @@ def password_field_login_get():
                     global logged_in_as
                     logged_in = True
                     logged_in_as = login_email
+                    once_logged_in()
+
                 else:
-                    print("Incorrect email or password.")         
+                    print("Incorrect email or password.")
 
 
 def password_field_login():
@@ -204,36 +207,114 @@ def signup_screen(error=False, duplicate=False):
     elif duplicate:
         duplicate_error = tk.Label(text="That email already exists!", fg="#ff3333", bg=BG)
         duplicate_error.place(x=250, y=350)
-        
+
+def inbox():
+    wn_logged_in.destroy()
+
+    wn_inbox = tk.Tk()
+    wn_inbox.geometry("650x500")
 
 
-if logged_in:
-    yorn = input("Would you like to send an email [1] or check inbox [2]? \n[1] [2]")
-    if yorn.lower() == "1":
-        receiver_email = input("Please input receiver email: ")
-        email_subject = input("Please input email subject: ")
-        email_body = input("Please input email contents: ")
-        syntax_check = receiver_email + email_subject + email_body
-        for char in syntax_check:
-            if char == "|":
-                syntax_check_bool = False
-        if syntax_check_bool:
-            with open ("mail.txt", "a", encoding="utf-8") as mail:
-                mail.write(f"{logged_in_as}|{receiver_email}|{email_subject}|{email_body}")
-    elif yorn.lower() == "2":
-        with open("mail.txt", "r", encoding="utf-8") as mail:
-            for line in mail:
+    with open("mail.txt", "r", encoding="utf-8") as mail:
+        for line in mail:
+            line = line.strip()
+            sender, _receiver, subject, body = line.split("|")
+
+    inbox_sender = tk.Label()
+    inbox_sender.config(text=f"Sender: {sender}", font=("Arial", 16, "bold"))
+    inbox_sender.pack()
+
+    inbox_title = tk.Label()
+    inbox_title.config(text=f"Title: {subject}", font=("Arial", 16, "bold"))
+    inbox_title.pack()
+
+    frame = tk.Frame(wn_inbox)
+    frame.pack(pady=20)
+
+    scrollbar = tk.Scrollbar(frame)
+    scrollbar.pack(side="right", fill="y")
+
+    inbox_body = tk.Text(frame, width=60, height=14, wrap="word", yscrollcommand=scrollbar.set)
+    inbox_body.pack(side="left")
+    inbox_body.insert("1.0", body)
+    inbox_body.config(state="disabled")
+
+    scrollbar.config(command=inbox_body.yview)
+    
+    
+    
+
+def once_logged_in():
+    you_have_mail = False
+    with open("mail.txt", "r", encoding="utf-8") as mail:
+        mail_readlines = mail.readlines()
+        if mail_readlines == []:
+            you_have_mail = False
+            print(you_have_mail)
+        else:
+            for line in mail_readlines:
                 line = line.strip()
-                sender, receiver, subject, body = line.split("|")
+                _sender, receiver, _subject, _body = line.split("|")
                 if receiver == logged_in_as:
                     you_have_mail = True
+                    break
                 else:
                     you_have_mail = False
-        if you_have_mail:
-            print(f"FROM: {sender} \nTO: {receiver} \nSUBJECT: {subject} \nCONTENT: {body}")
-        
-        elif not you_have_mail:
-            print("You have no mail.")
+
+    wn_login_password.destroy()
+
+    global wn_logged_in
+    wn_logged_in = tk.Tk()
+    wn_logged_in.geometry("650x500")
+
+    if you_have_mail:
+        inbox_counter_unread = tk.Label(wn_logged_in, text="You have unread mail.")
+        inbox_counter_unread.config(font=("Arial", 13, "bold"))
+        inbox_counter_unread.place(x=230, y=150)
+
+    elif not you_have_mail:
+        inbox_counter = tk.Label(wn_logged_in, text="You have no mail.")
+        inbox_counter.config(font=("Arial", 13, "bold"))
+        inbox_counter.place(x=250, y=150)
+
+    
+
+    check_inbox = tk.Button(wn_logged_in, text="See Inbox")
+    check_inbox.config(command=inbox)
+    check_inbox.place(x=400, y=350)
+
+    send_email = tk.Button(wn_logged_in, text="Send Email")
+    send_email.config(command=inbox)
+    send_email.place(x=150, y=350)
+
+    # receiver_email = input("Please input receiver email: ")
+    # email_subject = input("Please input email subject: ")
+    # email_body = input("Please input email contents: ")
+    
+    # syntax_check = receiver_email + email_subject + email_body
+
+    # for char in syntax_check:
+    #     if char == "|":
+    #         syntax_check_bool = False
+
+    # if syntax_check_bool:
+    #     with open ("mail.txt", "a", encoding="utf-8") as mail:
+    #         mail.write(f"{logged_in_as}|{receiver_email}|{email_subject}|{email_body}")
+
+    # with open("mail.txt", "r", encoding="utf-8") as mail:
+    #     for line in mail:
+    #         line = line.strip()
+    #         sender, receiver, subject, body = line.split("|")
+    #         if receiver == logged_in_as:
+    #             you_have_mail = True
+    #         else:
+    #             you_have_mail = False
+
+    # if you_have_mail:
+    #     print(f"FROM: {sender} \nTO: {receiver} \nSUBJECT: {subject} \nCONTENT: {body}")
+    
+    # elif not you_have_mail:
+    #     print("You have no mail.")
 
 # Tkinter
 wn = tk.Tk()
@@ -243,7 +324,7 @@ wn.title("Undemail")
 wn.config(background="#ffffff")
 
 welcome_text = tk.Label(wn, text="Welcome to undemail!", font=("Arial", 20, "bold"), bg=BG)
-welcome_text.place(x=180, y=50)
+welcome_text.place(x=180, y=100)
 
 login_button = tk.Button(text="Login")
 login_button.config(command=login_screen)
